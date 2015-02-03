@@ -71,11 +71,15 @@ final class Workflow implements WorkflowInterface
         $priority = null === $priority ? 0 : $priority;
 
         $this->steps->insert($step, $priority);
+
+        return $this;
     }
 
     public function addWriter(WriterInterface $writer)
     {
         array_push($this->writers, $writer);
+
+        return $this;
     }
 
     /**

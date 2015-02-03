@@ -17,11 +17,8 @@ class ValueConverterStep implements StepInterface
         }
 
         $this->converters[$property]->attach($converter);
-    }
 
-    public function clear($property)
-    {
-        $this->converters[$property] = new \SplObjectStorage();
+        return $this;
     }
 
     public function process(&$item)

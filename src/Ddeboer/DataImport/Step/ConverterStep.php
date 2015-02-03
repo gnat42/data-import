@@ -19,11 +19,8 @@ class ConverterStep implements StepInterface
     public function add(ItemConverterInterface $converter)
     {
         $this->converters->attach($converter);
-    }
 
-    public function clear()
-    {
-        $this->converters = new \SplObjectStorage();
+        return $this;
     }
 
     public function process(&$item)

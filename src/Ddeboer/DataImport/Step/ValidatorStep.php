@@ -34,11 +34,15 @@ class ValidatorStep implements PriorityStepInterface
         }
 
         $this->constraints[$field][] = $constraint;
+
+        return $this;
     }
 
     public function throwExceptions($flag = true)
     {
         $this->throwExceptions = $flag;
+
+        return $this;
     }
 
     public function getViolations()

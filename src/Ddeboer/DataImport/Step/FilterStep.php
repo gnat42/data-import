@@ -21,11 +21,8 @@ class FilterStep implements StepInterface
     public function add(FilterInterface $filter)
     {
         $this->filters->attach($filter);
-    }
 
-    public function clear()
-    {
-        $this->filters = new \SplObjectStorage();
+        return $this;
     }
 
     public function process(&$item)

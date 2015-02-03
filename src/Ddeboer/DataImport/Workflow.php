@@ -93,12 +93,13 @@ final class Workflow implements WorkflowInterface
      * 5. Write the item to each of the writers.
      *
      * @throws ExceptionInterface
+     *
      * @return Result Object Containing Workflow Results
      */
     public function process()
     {
         $count      = 0;
-        $exceptions = array();
+        $exceptions = new \SplObjectStorage();
         $startTime  = new \DateTime;
         $steps      = clone $this->steps;
 
@@ -119,12 +120,12 @@ final class Workflow implements WorkflowInterface
                     $writer->writeItem($item);
                 }
             } catch(ExceptionInterface $e) {
-                if ($this->skipItemOnFailure) {
-                    $exceptions[$rowIndex] = $e;
-                    $this->logger->error($e->getMessage());
-                } else {
+                if (!$this->skipItemOnFailure) {
                     throw $e;
                 }
+
+                $exceptions->attach($e);
+                $this->logger->error($e->getMessage());
             }
 
             $count++;

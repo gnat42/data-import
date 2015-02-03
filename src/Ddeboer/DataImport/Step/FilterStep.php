@@ -9,25 +9,27 @@ use Ddeboer\DataImport\Filter\FilterInterface;
 class FilterStep implements StepInterface
 {
     /**
-     * @var \SplObjectStorage
+     * @var \SplPriorityQueue
      */
     private $filters;
 
-    public function __construct(array $filters = [])
+    public function __construct()
     {
-        $this->filters = new \SplObjectStorage($filters);
+        $this->filters = new \SplPriorityQueue();
     }
 
-    public function add(FilterInterface $filter)
+    public function add(FilterInterface $filter, $priority = null)
     {
-        $this->filters->attach($filter);
+        $priority = $priority !== null ? $priority : $filter->getPriority();
+
+        $this->filters->insert($filter, $priority);
 
         return $this;
     }
 
     public function process(&$item)
     {
-        foreach ($this->filters as $filter) {
+        foreach (clone $this->filters as $filter) {
             if (false === $filter->filter($item)) {
                 return false;
             }

@@ -22,34 +22,34 @@ final class Workflow implements WorkflowInterface
      *
      * @var ReaderInterface
      */
-    protected $reader;
+    private $reader;
 
     /**
      * Identifier for the Import/Export
      *
      * @var string|null
      */
-    protected $name = null;
+    private $name = null;
 
     /**
      * @var boolean
      */
-    protected $skipItemOnFailure = false;
+    private $skipItemOnFailure = false;
 
     /**
      * @var \Psr\Log\NullLogger
      */
-    protected $logger;
+    private $logger;
 
     /**
      * @var \SplPriorityQueue
      */
-    protected $steps;
+    private $steps;
 
     /**
      * @var WriterInterface[]
      */
-    protected $writers = [];
+    private $writers = [];
 
     /**
      * Construct a workflow

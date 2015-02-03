@@ -108,7 +108,7 @@ final class Workflow implements WorkflowInterface
         }
 
         // Read all items
-        foreach ($this->reader as $rowIndex => $item) {
+        foreach ($this->reader as $item) {
             try {
                 foreach ($steps as $step) {
                     if (!$step->process($item)) {

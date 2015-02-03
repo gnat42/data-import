@@ -6,6 +6,7 @@ use Ddeboer\DataImport\Exception\ExceptionInterface;
 use Ddeboer\DataImport\Reader\ReaderInterface;
 use Ddeboer\DataImport\Step\PriorityStepInterface;
 use Ddeboer\DataImport\Step\StepInterface;
+use Ddeboer\DataImport\Writer\WriterInterface;
 use Psr\Log\LoggerInterface;
 use Psr\Log\NullLogger;
 
@@ -43,7 +44,12 @@ final class Workflow implements WorkflowInterface
     /**
      * @var \SplPriorityQueue
      */
-    protected $steps = [];
+    protected $steps;
+
+    /**
+     * @var WriterInterface[]
+     */
+    protected $writers = [];
 
     /**
      * Construct a workflow
@@ -67,6 +73,11 @@ final class Workflow implements WorkflowInterface
         $this->steps->insert($step, $priority);
     }
 
+    public function addWriter(WriterInterface $writer)
+    {
+        array_push($this->writers, $writer);
+    }
+
     /**
      * Process the whole import workflow
      *
@@ -87,6 +98,10 @@ final class Workflow implements WorkflowInterface
         $startTime  = new \DateTime;
         $steps      = clone $this->steps;
 
+        foreach ($this->writers as $writer) {
+            $writer->prepare();
+        }
+
         // Read all items
         foreach ($this->reader as $rowIndex => $item) {
             try {
@@ -94,6 +109,10 @@ final class Workflow implements WorkflowInterface
                     if (!$step->process($item)) {
                         continue;
                     }
+                }
+
+                foreach ($this->writers as $writer) {
+                    $writer->writeItem($item);
                 }
             } catch(ExceptionInterface $e) {
                 if ($this->skipItemOnFailure) {
@@ -105,6 +124,10 @@ final class Workflow implements WorkflowInterface
             }
 
             $count++;
+        }
+
+        foreach ($this->writers as $writer) {
+            $writer->finish();
         }
 
         return new Result($this->name, $startTime, new \DateTime, $count, $exceptions);

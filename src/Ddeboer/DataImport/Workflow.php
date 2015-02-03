@@ -37,7 +37,7 @@ final class Workflow implements WorkflowInterface
     private $skipItemOnFailure = false;
 
     /**
-     * @var \Psr\Log\NullLogger
+     * @var LoggerInterface
      */
     private $logger;
 
@@ -55,7 +55,8 @@ final class Workflow implements WorkflowInterface
      * Construct a workflow
      *
      * @param ReaderInterface $reader
-     * @param string $name
+     * @param LoggerInterface $logger
+     * @param string          $name
      */
     public function __construct(ReaderInterface $reader, LoggerInterface $logger = null, $name = null)
     {
@@ -65,6 +66,14 @@ final class Workflow implements WorkflowInterface
         $this->steps = new \SplPriorityQueue();
     }
 
+    /**
+     * Add a step to the current workflow.
+     *
+     * @param StepInterface $step
+     * @param integer|null  $priority
+     *
+     * @return Workflow
+     */
     public function addStep(StepInterface $step, $priority = null)
     {
         $priority = null === $priority && $step instanceof PriorityStepInterface ? $step->getPriority() : null;
@@ -75,6 +84,13 @@ final class Workflow implements WorkflowInterface
         return $this;
     }
 
+    /**
+     * Add a new writer to the current workflow.
+     *
+     * @param WriterInterface $writer
+     *
+     * @return Workflow
+     */
     public function addWriter(WriterInterface $writer)
     {
         array_push($this->writers, $writer);
@@ -84,13 +100,6 @@ final class Workflow implements WorkflowInterface
 
     /**
      * Process the whole import workflow
-     *
-     * 1. Prepare the added writers.
-     * 2. Ask the reader for one item at a time.
-     * 3. Filter each item.
-     * 4. If the filter succeeds, convert the item’s values using the added
-     *    converters.
-     * 5. Write the item to each of the writers.
      *
      * @throws ExceptionInterface
      *

@@ -4,7 +4,6 @@ namespace Ddeboer\DataImport;
 
 use Ddeboer\DataImport\Exception\ExceptionInterface;
 use Ddeboer\DataImport\Reader\ReaderInterface;
-use DateTime;
 use Ddeboer\DataImport\Step\PriorityStepInterface;
 use Ddeboer\DataImport\Step\StepInterface;
 use Psr\Log\LoggerInterface;
@@ -36,10 +35,13 @@ final class Workflow implements WorkflowInterface
      */
     protected $skipItemOnFailure = false;
 
+    /**
+     * @var \Psr\Log\NullLogger
+     */
     protected $logger;
 
     /**
-     * @var array
+     * @var \SplPriorityQueue
      */
     protected $steps = [];
 
@@ -54,6 +56,7 @@ final class Workflow implements WorkflowInterface
         $this->name = $name;
         $this->logger = $logger ?: new NullLogger();
         $this->reader = $reader;
+        $this->steps = new \SplPriorityQueue();
     }
 
     public function addStep(StepInterface $step, $priority = null)
@@ -61,11 +64,7 @@ final class Workflow implements WorkflowInterface
         $priority = null === $priority && $step instanceof PriorityStepInterface ? $step->getPriority() : null;
         $priority = null === $priority ? 0 : $priority;
 
-        if (!isset($this->steps[$priority])) {
-            $this->steps[$priority] = new \SplObjectStorage();
-        }
-
-        $this->steps[$priority]->attach($step);
+        $this->steps->insert($step, $priority);
     }
 
     /**
@@ -85,8 +84,8 @@ final class Workflow implements WorkflowInterface
     {
         $count      = 0;
         $exceptions = array();
-        $startTime  = new DateTime;
-        $steps      = $this->getOrderedSteps();
+        $startTime  = new \DateTime;
+        $steps      = clone $this->steps;
 
         // Read all items
         foreach ($this->reader as $rowIndex => $item) {
@@ -108,7 +107,7 @@ final class Workflow implements WorkflowInterface
             $count++;
         }
 
-        return new Result($this->name, $startTime, new DateTime, $count, $exceptions);
+        return new Result($this->name, $startTime, new \DateTime, $count, $exceptions);
     }
 
     /**
@@ -128,21 +127,5 @@ final class Workflow implements WorkflowInterface
     public function getName()
     {
         return $this->name;
-    }
-
-    private function getOrderedSteps()
-    {
-        $tmp = $this->steps;
-        $steps = [];
-
-        ksort($tmp);
-
-        foreach ($tmp as $_steps) {
-            foreach ($_steps as $step) {
-                array_push($steps, $step);
-            }
-        }
-
-        return $steps;
     }
 }

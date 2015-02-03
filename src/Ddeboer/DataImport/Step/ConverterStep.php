@@ -13,7 +13,11 @@ class ConverterStep implements StepInterface
 
     public function __construct(array $converters = [])
     {
-        $this->converters = new \SplObjectStorage($converters);
+        $this->converters = new \SplObjectStorage();
+
+        foreach ($converters as $converter) {
+            $this->add($converter);
+        }
     }
 
     public function add(ItemConverterInterface $converter)
@@ -26,11 +30,7 @@ class ConverterStep implements StepInterface
     public function process(&$item)
     {
         foreach ($this->converters as $converter) {
-            $converter->convert($item);
-        }
-
-        if ($item && !(is_array($item) || ($item instanceof \ArrayAccess && $item instanceof \Traversable))) {
-            throw new UnexpectedTypeException($item, 'false or array');
+            $item = $converter->convert($item);
         }
 
         return true;

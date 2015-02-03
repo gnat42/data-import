@@ -3,6 +3,7 @@
 namespace Ddeboer\DataImport;
 
 use Ddeboer\DataImport\Exception\ExceptionInterface;
+use Ddeboer\DataImport\Exception\UnexpectedTypeException;
 use Ddeboer\DataImport\Reader\ReaderInterface;
 use Ddeboer\DataImport\Step\PriorityStepInterface;
 use Ddeboer\DataImport\Step\StepInterface;
@@ -110,7 +111,6 @@ final class Workflow implements WorkflowInterface
         $count      = 0;
         $exceptions = new \SplObjectStorage();
         $startTime  = new \DateTime;
-        $steps      = clone $this->steps;
 
         foreach ($this->writers as $writer) {
             $writer->prepare();
@@ -119,10 +119,14 @@ final class Workflow implements WorkflowInterface
         // Read all items
         foreach ($this->reader as $item) {
             try {
-                foreach ($steps as $step) {
+                foreach (clone $this->steps as $step) {
                     if (!$step->process($item)) {
                         continue;
                     }
+                }
+
+                if (!is_array($item) && !($item instanceof \ArrayAccess && $item instanceof \Traversable)) {
+                    throw new UnexpectedTypeException($item, 'array');
                 }
 
                 foreach ($this->writers as $writer) {

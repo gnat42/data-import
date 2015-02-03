@@ -21,12 +21,8 @@ class CallbackFilter implements FilterInterface
      *
      * @throws \RuntimeException If $callback is not callable
      */
-    public function __construct($callback)
+    public function __construct(callable $callback)
     {
-        if (!is_callable($callback)) {
-            throw new \RuntimeException('$callback must be callable');
-        }
-
         $this->callback = $callback;
     }
 

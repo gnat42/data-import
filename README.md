@@ -60,6 +60,7 @@ Documentation
       - [StringToObjectConverter](#stringtoobjectconverter)
       - [ArrayValueConverterMap](#arrayvalueconvertermap)
       - [CallbackValueConverter](#callbackvalueconverter)
+      - [MappingValueConverter](#mappingvalueconverter)
   * [Examples](#examples)
     - [Import CSV file and write to database](#import-csv-file-and-write-to-database)
     - [Export to CSV file](#export-to-csv-file)
@@ -328,9 +329,22 @@ $file = new \SplFileObject('path/to/ecxel_file.xls');
 $reader = new ExcelReader($file);
 ```
 
+To set the row number that headers will be read from, pass a number as the second
+argument.
+
+```php
+$reader = new ExcelReader($file, 2);
+```
+
+To read the specific sheet:
+
+```php
+$reader = new ExcelReader($file, null, 3);
+```
+
 ###OneToManyReader
 
-Allows for merging of two data sources (using existing readers), for example you have one CSV with orders and another with order items. 
+Allows for merging of two data sources (using existing readers), for example you have one CSV with orders and another with order items.
 
 Imagine two CSV's like the following:
 
@@ -348,7 +362,7 @@ OrderId,Name
 ```
 
 You want to associate the items to the order. Using the OneToMany reader we can nest these rows in the order using a key
-which you specify in the OneToManyReader.  
+which you specify in the OneToManyReader.
 
 The code would look something like:
 
@@ -364,9 +378,9 @@ $orderItemReader->setHeaderRowNumber(0);
 $oneToManyReader = new OneToManyReader($orderReader, $orderItemReader, 'items', 'OrderId', 'OrderId');
 ```
 
-The third parameter is the key which the order item data will be nested under. This will be an array of order items. 
+The third parameter is the key which the order item data will be nested under. This will be an array of order items.
 The fourth and fifth parameters are "primary" and "foreign" keys of the data. The OneToMany reader will try to match the data using these keys.
-Take for example the CSV's given above, you would expect that Order "1" has the first 2 Order Items associated to it due to their Order Id's also 
+Take for example the CSV's given above, you would expect that Order "1" has the first 2 Order Items associated to it due to their Order Id's also
 being "1".
 
 Note: You can omit the last parameter, if both files have the same field. Eg if parameter 4 is 'OrderId' and you don't specify
@@ -377,30 +391,30 @@ The resulting data will look like:
 ```php
 //Row 1
 array(
-	'OrderId' => 1,
-	'Price' => 30,
-	'items' => array(
-		array(
-			'OrderId' => 1,
-			'Name' => 'Super Cool Item 1',
-		),
-		array(
-			'OrderId' => 1,
-			'Name' => 'Super Cool Item 2',
-		),
-	),
+    'OrderId' => 1,
+    'Price' => 30,
+    'items' => array(
+        array(
+            'OrderId' => 1,
+            'Name' => 'Super Cool Item 1',
+        ),
+        array(
+            'OrderId' => 1,
+            'Name' => 'Super Cool Item 2',
+        ),
+    ),
 );
 
 //Row2
 array(
-	'OrderId' => 2,
-	'Price' => 15,
-	'items' => array(
-		array(
-			'OrderId' => 2,
-			'Name' => 'Super Cool Item 1',
-		),
-	)
+    'OrderId' => 2,
+    'Price' => 15,
+    'items' => array(
+        array(
+            'OrderId' => 2,
+            'Name' => 'Super Cool Item 1',
+        ),
+    )
 );
 ```
 
@@ -471,6 +485,12 @@ or
 ```php
 $writer = new DoctrineWriter($entityManager, 'YourNamespace:Employee', array('column1', 'column2', 'column3'));
 ```
+
+The DoctrineWriter will also search out associations automatically and link them by an entity reference. For example
+suppose you have a Product entity that you are importing and must be associated to a Category. If there is a field in 
+the import file named 'Category' with an id, the writer will use metadata to get the association class and create a
+reference so that it can be associated properly. The DoctrineWriter will skip any association fields that are already
+objects in cases where a converter was used to retrieve the association.
 
 #### PdoWriter
 
@@ -839,7 +859,7 @@ $converter = new CallbackItemConverter(function ($item) use ($translator) {
         $item[$key] = $translator->translate($value);
     }
 
-    return $row;
+    return $item;
 });
 ```
 
@@ -972,6 +992,21 @@ $converter = new CallbackValueConverter($callable);
 $output = $converter->convert(array('foo', 'bar')); // $output will be "foo,bar"
 ```
 
+#### MappingValueConverter
+
+Looks for a key in a hash you must provide in the constructor:
+
+```php
+use Ddeboer\DataImport\ValueConverter\MappingValueConverter;
+
+$converter = new MappingValueConverter(array(
+    'source' => 'destination'
+));
+
+$converter->convert('source'); // destination
+$converter->convert('unexpected value'); // throws an UnexpectedValueException
+```
+
 ### Examples
 
 #### Import CSV file and write to database
@@ -1097,7 +1132,7 @@ $workflow = new Workflow($reader);
 
 // Add the writer to the workflow
 $file = new \SplFileObject('output.csv', 'w');
-$writer = new Writer($file);
+$writer = new CsvWriter($file);
 $workflow->addWriter($writer);
 
 // As you can see, the first names are not capitalized correctly. Let's fix

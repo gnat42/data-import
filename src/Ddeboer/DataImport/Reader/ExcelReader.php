@@ -11,11 +11,12 @@ namespace Ddeboer\DataImport\Reader;
  * @link   http://phpexcel.codeplex.com/
  * @link   https://github.com/logiQ/PHPExcel
  */
-class ExcelReader implements ReaderInterface
+class ExcelReader implements CountableReaderInterface, \SeekableIterator
 {
     protected $worksheet;
     protected $headerRowNumber;
     protected $pointer = 0;
+    protected $columnHeaders;
 
     /**
      * Total number of rows
@@ -35,6 +36,7 @@ class ExcelReader implements ReaderInterface
     {
         $reader = \PHPExcel_IOFactory::createReaderForFile($file->getPathName());
         $reader->setReadDataOnly(true);
+        /** @var \PHPExcel $excel */
         $excel = $reader->load($file->getPathname());
 
         if (null !== $activeSheet) {

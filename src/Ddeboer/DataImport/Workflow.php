@@ -117,7 +117,7 @@ final class Workflow implements WorkflowInterface
         }
 
         // Read all items
-        foreach ($this->reader as $item) {
+        foreach ($this->reader as $rowIndex => $item) {
             try {
                 foreach (clone $this->steps as $step) {
                     if (!$step->process($item)) {
@@ -137,7 +137,7 @@ final class Workflow implements WorkflowInterface
                     throw $e;
                 }
 
-                $exceptions->attach($e);
+                $exceptions->attach($e,$rowIndex);
                 $this->logger->error($e->getMessage());
             }
 

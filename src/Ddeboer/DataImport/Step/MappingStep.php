@@ -9,7 +9,7 @@ use Symfony\Component\PropertyAccess\PropertyAccessor;
  */
 class MappingStep implements StepInterface
 {
-    private $mappings;
+    protected $mappings;
 
     public function __construct(array $mappings = [], PropertyAccessor $accessor = null)
     {

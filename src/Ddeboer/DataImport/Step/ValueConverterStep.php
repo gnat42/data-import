@@ -8,7 +8,7 @@ use Ddeboer\DataImport\ValueConverter\ValueConverterInterface;
  */
 class ValueConverterStep implements StepInterface
 {
-    private $converters = [];
+    protected $converters = [];
 
     public function add($property, ValueConverterInterface $converter)
     {

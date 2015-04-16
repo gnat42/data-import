@@ -120,8 +120,8 @@ class Workflow implements WorkflowInterface
         foreach ($this->reader as $rowIndex => $item) {
             try {
                 foreach (clone $this->steps as $step) {
-                    if (!$step->process($item)) {
-                        continue;
+                    if ($step->process($item) === false) {
+                        continue 2;
                     }
                 }
 

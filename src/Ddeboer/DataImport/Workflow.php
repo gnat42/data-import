@@ -16,7 +16,7 @@ use Psr\Log\NullLogger;
  *
  * @author David de Boer <david@ddeboer.nl>
  */
-final class Workflow implements WorkflowInterface
+class Workflow implements WorkflowInterface
 {
     /**
      * Reader

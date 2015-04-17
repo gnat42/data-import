@@ -2,7 +2,10 @@
 
 namespace Ddeboer\DataImport\Step;
 
-use Symfony\Component\PropertyAccess\PropertyAccessor;
+use \Ddeboer\DataImport\Exception\MappingException;
+use \Symfony\Component\PropertyAccess\Exception\NoSuchPropertyException;
+use \Symfony\Component\PropertyAccess\Exception\UnexpectedTypeException;
+use \Symfony\Component\PropertyAccess\PropertyAccessor;
 
 /**
  * @author Markus Bachmann <markus.bachmann@bachi.biz>
@@ -26,9 +29,16 @@ class MappingStep implements StepInterface
 
     public function process(&$item)
     {
-        foreach ($this->mappings as $from => $to) {
-            $value = $this->accessor->getValue($item, $from);
-            $this->accessor->setValue($item, $to, $value);
+        try {
+            foreach ($this->mappings as $from => $to) {
+                $value = $this->accessor->getValue($item, $from);
+                $this->accessor->setValue($item, $to, $value);
+            }
+        }catch(NoSuchPropertyException $exception){
+            throw new MappingException('Unable to map item',null,$exception);
+        }
+        catch(UnexpectedTypeException $exception){
+            throw new MappingException('Unable to map item',null,$exception);
         }
     }
 } 

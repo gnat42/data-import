@@ -2,6 +2,7 @@
 
 namespace Ddeboer\DataImport\Step;
 use Ddeboer\DataImport\ValueConverter\ValueConverterInterface;
+use Symfony\Component\PropertyAccess\PropertyAccessor;
 
 /**
  * @author Markus Bachmann <markus.bachmann@bachi.biz>
@@ -23,12 +24,18 @@ class ValueConverterStep implements StepInterface
 
     public function process(&$item)
     {
-        $accessor = new \Symfony\Component\PropertyAccess\PropertyAccessor();
+        $accessor = new PropertyAccessor();
         foreach ($this->converters as $property => $converters) {
             foreach ($converters as $converter) {
-                $orgValue = $accessor->getValue($item, $property);
-                $value = $converter->convert($orgValue);
-                $accessor->setValue($item,$property,$value);
+                if(isset($item[$property])){
+                    $item[$property] = $converter->convert($item[$property]);
+                }
+                else
+                {
+                    $orgValue = $accessor->getValue($item, $property);
+                    $value = $converter->convert($orgValue);
+                    $accessor->setValue($item,$property,$value);
+                }
             }
         }
 

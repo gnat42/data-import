@@ -23,11 +23,12 @@ class ValueConverterStep implements StepInterface
 
     public function process(&$item)
     {
+        $accessor = new \Symfony\Component\PropertyAccess\PropertyAccessor();
         foreach ($this->converters as $property => $converters) {
-            if (isset($item[$property])) {
-                foreach ($converters as $converter) {
-                    $item[$property] = $converter->convert($item[$property]);
-                }
+            foreach ($converters as $converter) {
+                $orgValue = $accessor->getValue($item, $property);
+                $value = $converter->convert($orgValue);
+                $accessor->setValue($item,$property,$value);
             }
         }
 

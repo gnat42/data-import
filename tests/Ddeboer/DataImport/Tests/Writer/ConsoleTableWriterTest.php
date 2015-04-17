@@ -7,7 +7,6 @@ use Symfony\Component\Console\Helper\Table;
 
 use Ddeboer\DataImport\Workflow;
 use Ddeboer\DataImport\Reader\ArrayReader;
-use Ddeboer\DataImport\ItemConverter\MappingItemConverter;
 use Ddeboer\DataImport\Writer\ConsoleTableWriter;
 
 /**
@@ -29,11 +28,6 @@ class ConsoleTableWriterTest extends \PHPUnit_Framework_TestCase
         );
         $reader = new ArrayReader($data);
 
-        $converter = new MappingItemConverter();
-        $converter
-            ->addMapping('first', 'firstname')
-        ;
-
         $output = new BufferedOutput();
         $table = new Table($output);
         $table
@@ -42,7 +36,7 @@ class ConsoleTableWriterTest extends \PHPUnit_Framework_TestCase
 
         $workflow = new Workflow($reader);
         $workflow
-            ->addItemConverter($converter)
+            ->addStep(new \Ddeboer\DataImport\Step\MappingStep(array('[first]'=>'[firstname]')))
             ->addWriter(new ConsoleTableWriter($output, $table))
             ->process()
         ;

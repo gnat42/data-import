@@ -33,6 +33,10 @@ class MappingStep implements StepInterface
             foreach ($this->mappings as $from => $to) {
                 $value = $this->accessor->getValue($item, $from);
                 $this->accessor->setValue($item, $to, $value);
+                $strFrom = str_replace(array('[',']'), array('',''), $from);
+                if(isset($item[$strFrom])){
+                    unset($item[$strFrom]);
+                }
             }
         }catch(NoSuchPropertyException $exception){
             throw new MappingException('Unable to map item',null,$exception);

@@ -197,8 +197,6 @@ class DoctrineWriter implements Writer, FlushableWriter
             $value = null;
             if (isset($item[$fieldName])) {
                 $value = $item[$fieldName];
-            } elseif (method_exists($item, 'get' . ucfirst($fieldName))) {
-                $value = $item->{'get' . ucfirst($fieldName)};
             }
 
             if (null === $value) {

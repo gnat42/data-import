@@ -14,6 +14,9 @@ class Report
     private $row;
     private $messages;
 
+    /**
+     * @param $row
+     */
     public function __construct($row)
     {
         $this->row = $row;
@@ -40,9 +43,20 @@ class Report
     /**
      * @return mixed
      */
-    public function getMessages()
+    public function getMessages($severity = null)
     {
-        return $this->messages;
+        if($severity === null) {
+            return $this->messages;
+        }
+
+        $messages = array();
+        foreach($this->messages as $message) {
+            if($message->getSeverity() == $severity) {
+                $messages[] = $message;
+            }
+        }
+
+        return $messages;
     }
 
     /**

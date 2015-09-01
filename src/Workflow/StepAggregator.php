@@ -167,6 +167,11 @@ class StepAggregator implements Workflow, LoggerAwareInterface
                 $errors++;
                 $exceptions->attach($e, $index);
                 $this->logger->error($e->getMessage());
+
+                if ($report->hasMessages()) {
+                    $reports->attach($report,$index);
+                }
+                continue;
             }
 
             if ($report->hasMessages()) {
